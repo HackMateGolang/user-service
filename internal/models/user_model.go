@@ -14,13 +14,13 @@ type User struct {
 }
 
 type CreateUserRequest struct {
-	login    string
-	email    string
-	username string
+	Login    string
+	Email    string
+	Username string
 }
 
 type ReadUserRequest struct {
-	login string
+	Login string
 }
 
 type UpdateUserRequest struct {
@@ -50,5 +50,5 @@ type PatchUserRequest struct {
 }
 
 type DeleteUserRequest struct {
-	login string
+	Login string
 }

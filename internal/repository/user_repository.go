@@ -26,9 +26,22 @@ func (r *userRepository) CreateUser (ctx context.Context, user *models.User) (st
 	return user.Login, r.userCaching(ctx, user)
 }
 
-func (r *userRepository) ReadUser (req *models.ReadUserRequest) (string, error) {
-	var login string
-	return login, nil
+func (r *userRepository) ReadUser (ctx context.Context, req *models.ReadUserRequest) (*models.User, error) {
+	if req.Login == "" {
+		return nil, fmt.Errorf("Repo: Login is empty")
+	}
+	key := userCacheKey(req.Login)
+	var user models.User
+	err := r.redisClient.HGetAll(ctx, key).Scan(&user)
+	if err == nil && user.Login != "" {
+		return &user, nil
+	}
+
+	if err := r.db.Where("login = ?", req.Login).First(&user).Error; err != nil {
+		return nil, fmt.Errorf("Repo: User not found: %w", err)
+	}
+
+	return &user, r.userCaching(ctx, &user)
 }
 
 func (r *userRepository) UpdateUser (req *models.UpdateUserRequest) (string, error) {
