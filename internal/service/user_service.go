@@ -41,3 +41,7 @@ func (s *UserService) ReplaceUser(ctx context.Context, req *models.UpdateUserReq
 func (s *UserService) PatchUser(ctx context.Context, req *models.PatchUserRequest) (bool, error){
 	return s.repo.PatchUser(ctx, req)
 }
+
+func (s *UserService) DeleteUser(ctx context.Context, req *models.DeleteUserRequest) (bool, error){
+	return s.repo.DeleteUser(ctx, req)
+}
