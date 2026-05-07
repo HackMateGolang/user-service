@@ -10,7 +10,7 @@ import (
 )
 
 type userRepository struct {
-	db *gorm.DB
+	db          *gorm.DB
 	redisClient *redis.Client
 }
 
@@ -18,7 +18,7 @@ func NewUserRepository(db *gorm.DB, redisClient *redis.Client) *userRepository {
 	return &userRepository{db: db, redisClient: redisClient}
 }
 
-func (r *userRepository) CreateUser (ctx context.Context, user *models.User) (string, error) {
+func (r *userRepository) CreateUser(ctx context.Context, user *models.User) (string, error) {
 	if err := r.db.Model(&models.User{}).Create(user).Error; err != nil {
 		return "", fmt.Errorf("Repo: Create user failed: %w", err)
 	}
@@ -26,7 +26,7 @@ func (r *userRepository) CreateUser (ctx context.Context, user *models.User) (st
 	return user.Login, r.userCaching(ctx, user)
 }
 
-func (r *userRepository) ReadUser (ctx context.Context, req *models.ReadUserRequest) (*models.User, error) {
+func (r *userRepository) ReadUser(ctx context.Context, req *models.ReadUserRequest) (*models.User, error) {
 	if req.Login == "" {
 		return nil, fmt.Errorf("Repo: Login is empty")
 	}
@@ -44,17 +44,25 @@ func (r *userRepository) ReadUser (ctx context.Context, req *models.ReadUserRequ
 	return &user, r.userCaching(ctx, &user)
 }
 
-func (r *userRepository) UpdateUser (req *models.UpdateUserRequest) (string, error) {
+func (r *userRepository) ReplaceUser(ctx context.Context, req *models.UpdateUserRequest) (bool, error) {
+	if err := r.db.Model(&models.User{}).Where("id = ?", req.Login).Select("*").Updates(req).Error; err != nil {
+		return false, fmt.Errorf("Repo: replace user failed: %w", err)
+	}
+
+	var updatedUser models.User
+	if err := r.db.Where("id = ?", req.Login).First(&updatedUser).Error; err != nil {
+		return false, fmt.Errorf("Repo: updated user not found: %w", err)
+	}
+
+	return true, r.userCaching(ctx, &updatedUser)
+}
+
+func (r *userRepository) PatchUser(req *models.PatchUserRequest) (string, error) {
 	var login string
 	return login, nil
 }
 
-func (r *userRepository) PatchUser (req *models.PatchUserRequest) (string, error) {
-	var login string
-	return login, nil
-}
-
-func (r *userRepository) DeleteUser (req *models.DeleteUserRequest) (string, error) {
+func (r *userRepository) DeleteUser(req *models.DeleteUserRequest) (string, error) {
 	var login string
 	return login, nil
 }
