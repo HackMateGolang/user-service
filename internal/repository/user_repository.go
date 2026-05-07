@@ -45,21 +45,39 @@ func (r *userRepository) ReadUser(ctx context.Context, req *models.ReadUserReque
 }
 
 func (r *userRepository) ReplaceUser(ctx context.Context, req *models.UpdateUserRequest) (bool, error) {
-	if err := r.db.Model(&models.User{}).Where("id = ?", req.Login).Select("*").Updates(req).Error; err != nil {
-		return false, fmt.Errorf("Repo: replace user failed: %w", err)
+	result := r.db.Model(&models.User{}).Where("login = ?", req.Login).Select("*").Updates(req)
+	if result.Error != nil {
+		return false, fmt.Errorf("Repo: replace user failed: %w", result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return false, fmt.Errorf("Repo: user not found")
 	}
 
 	var updatedUser models.User
-	if err := r.db.Where("id = ?", req.Login).First(&updatedUser).Error; err != nil {
+	if err := r.db.Where("login = ?", req.Login).First(&updatedUser).Error; err != nil {
 		return false, fmt.Errorf("Repo: updated user not found: %w", err)
 	}
 
 	return true, r.userCaching(ctx, &updatedUser)
 }
 
-func (r *userRepository) PatchUser(req *models.PatchUserRequest) (string, error) {
-	var login string
-	return login, nil
+func (r *userRepository) PatchUser(ctx context.Context, req *models.PatchUserRequest) (bool, error) {
+	result := r.db.Model(&models.User{}).Where("login = ?", req.Login).Updates(req)
+	if result.Error != nil {
+		return false, fmt.Errorf("Repo: patch user failed: %w", result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return false, fmt.Errorf("Repo: user not found")
+	}
+
+	var patchedUser models.User
+	if err := r.db.Where("login = ?", req.Login).First(&patchedUser).Error; err != nil {
+		return false, fmt.Errorf("Repo: patched user not found: %w", err)
+	}
+
+	return true, r.userCaching(ctx, &patchedUser)
 }
 
 func (r *userRepository) DeleteUser(req *models.DeleteUserRequest) (string, error) {
