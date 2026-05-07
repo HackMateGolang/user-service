@@ -33,3 +33,7 @@ func (s *UserService) CreateUser(ctx context.Context, req *models.CreateUserRequ
 func (s *UserService) ReadUser(ctx context.Context, req *models.ReadUserRequest) (*models.User, error){
 	return s.repo.ReadUser(ctx, req)
 }
+
+func (s *UserService) ReplaceUser(ctx context.Context, req *models.UpdateUserRequest) (bool, error){
+	return s.repo.ReplaceUser(ctx, req)
+}
