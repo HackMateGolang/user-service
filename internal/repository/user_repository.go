@@ -80,9 +80,14 @@ func (r *userRepository) PatchUser(ctx context.Context, req *models.PatchUserReq
 	return true, r.userCaching(ctx, &patchedUser)
 }
 
-func (r *userRepository) DeleteUser(req *models.DeleteUserRequest) (string, error) {
-	var login string
-	return login, nil
+func (r *userRepository) DeleteUser(ctx context.Context, req *models.DeleteUserRequest) (bool, error) {
+	if err := r.db.Delete(&models.User{}, req.Login).Error; err != nil {
+		return false, fmt.Errorf("Repo: user not found: %w", err)
+	}
+
+	r.redisClient.Del(ctx, userCacheKey(req.Login))
+
+	return true, nil
 }
 
 func (r *userRepository) userCaching(ctx context.Context, user *models.User) error {
