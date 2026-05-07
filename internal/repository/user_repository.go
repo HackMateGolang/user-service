@@ -9,16 +9,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type userRepository struct {
+type UserRepository struct {
 	db          *gorm.DB
 	redisClient *redis.Client
 }
 
-func NewUserRepository(db *gorm.DB, redisClient *redis.Client) *userRepository {
-	return &userRepository{db: db, redisClient: redisClient}
+func NewUserRepository(db *gorm.DB, redisClient *redis.Client) *UserRepository {
+	return &UserRepository{db: db, redisClient: redisClient}
 }
 
-func (r *userRepository) CreateUser(ctx context.Context, user *models.User) (string, error) {
+func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) (string, error) {
 	if err := r.db.Model(&models.User{}).Create(user).Error; err != nil {
 		return "", fmt.Errorf("Repo: Create user failed: %w", err)
 	}
@@ -26,7 +26,7 @@ func (r *userRepository) CreateUser(ctx context.Context, user *models.User) (str
 	return user.Login, r.userCaching(ctx, user)
 }
 
-func (r *userRepository) ReadUser(ctx context.Context, req *models.ReadUserRequest) (*models.User, error) {
+func (r *UserRepository) ReadUser(ctx context.Context, req *models.ReadUserRequest) (*models.User, error) {
 	if req.Login == "" {
 		return nil, fmt.Errorf("Repo: Login is empty")
 	}
@@ -44,7 +44,7 @@ func (r *userRepository) ReadUser(ctx context.Context, req *models.ReadUserReque
 	return &user, r.userCaching(ctx, &user)
 }
 
-func (r *userRepository) ReplaceUser(ctx context.Context, req *models.UpdateUserRequest) (bool, error) {
+func (r *UserRepository) ReplaceUser(ctx context.Context, req *models.UpdateUserRequest) (bool, error) {
 	result := r.db.Model(&models.User{}).Where("login = ?", req.Login).Select("*").Updates(req)
 	if result.Error != nil {
 		return false, fmt.Errorf("Repo: replace user failed: %w", result.Error)
@@ -62,7 +62,7 @@ func (r *userRepository) ReplaceUser(ctx context.Context, req *models.UpdateUser
 	return true, r.userCaching(ctx, &updatedUser)
 }
 
-func (r *userRepository) PatchUser(ctx context.Context, req *models.PatchUserRequest) (bool, error) {
+func (r *UserRepository) PatchUser(ctx context.Context, req *models.PatchUserRequest) (bool, error) {
 	result := r.db.Model(&models.User{}).Where("login = ?", req.Login).Updates(req)
 	if result.Error != nil {
 		return false, fmt.Errorf("Repo: patch user failed: %w", result.Error)
@@ -80,7 +80,7 @@ func (r *userRepository) PatchUser(ctx context.Context, req *models.PatchUserReq
 	return true, r.userCaching(ctx, &patchedUser)
 }
 
-func (r *userRepository) DeleteUser(ctx context.Context, req *models.DeleteUserRequest) (bool, error) {
+func (r *UserRepository) DeleteUser(ctx context.Context, req *models.DeleteUserRequest) (bool, error) {
 	if err := r.db.Delete(&models.User{}, req.Login).Error; err != nil {
 		return false, fmt.Errorf("Repo: user not found: %w", err)
 	}
@@ -90,7 +90,7 @@ func (r *userRepository) DeleteUser(ctx context.Context, req *models.DeleteUserR
 	return true, nil
 }
 
-func (r *userRepository) userCaching(ctx context.Context, user *models.User) error {
+func (r *UserRepository) userCaching(ctx context.Context, user *models.User) error {
 	key := userCacheKey(user.Login)
 	if err := r.redisClient.HSet(ctx, key, user).Err(); err != nil {
 		return fmt.Errorf("Repo: user caching failed: %w", err)
