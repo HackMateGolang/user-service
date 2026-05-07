@@ -18,7 +18,7 @@ func NewUserService(repo repository.UserRepository) *UserService {
 
 func (s *UserService) CreateUser(ctx context.Context, req *models.CreateUserRequest) (string, error) {
 	if _, err := s.repo.ReadUser(ctx, &models.ReadUserRequest{Login: req.Login}); err == nil {
-		return "", fmt.Errorf("Service: User already exists: %w", err)
+		return "", fmt.Errorf("Service: User already exists")
 	}
 
 	user := models.User{Login: req.Login, Username: req.Username}
@@ -28,4 +28,8 @@ func (s *UserService) CreateUser(ctx context.Context, req *models.CreateUserRequ
 	}
 
 	return login, nil
+}
+
+func (s *UserService) ReadUser(ctx context.Context, req *models.ReadUserRequest) (*models.User, error){
+	return s.repo.ReadUser(ctx, req)
 }
