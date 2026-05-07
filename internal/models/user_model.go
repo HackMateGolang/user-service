@@ -1,14 +1,14 @@
 package models
 
 type User struct {
-	Login       string
+	Login       string `gorm:"primaryKey"`
 	Username    string
 	FirstName   string
 	SecondName  string
 	Patronymic  string
 	Stack       map[string]struct{}
 	Description string
-	contacts    map[string]string
+	Сontacts    map[string]string
 	ShortDesc   string
 	Avatar      string
 }
@@ -31,7 +31,7 @@ type UpdateUserRequest struct {
 	Patronymic  string
 	Stack       map[string]struct{}
 	Description string
-	contacts    map[string]string
+	Сontacts    map[string]string
 	ShortDesc   string
 	Avatar      string
 }
@@ -44,7 +44,7 @@ type PatchUserRequest struct {
 	Patronymic  *string
 	Stack       *map[string]struct{}
 	Description *string
-	contacts    *map[string]string
+	Сontacts    *map[string]string
 	ShortDesc   *string
 	Avatar      *string
 }
