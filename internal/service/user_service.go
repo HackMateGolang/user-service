@@ -37,3 +37,7 @@ func (s *UserService) ReadUser(ctx context.Context, req *models.ReadUserRequest)
 func (s *UserService) ReplaceUser(ctx context.Context, req *models.UpdateUserRequest) (bool, error){
 	return s.repo.ReplaceUser(ctx, req)
 }
+
+func (s *UserService) PatchUser(ctx context.Context, req *models.PatchUserRequest) (bool, error){
+	return s.repo.PatchUser(ctx, req)
+}
