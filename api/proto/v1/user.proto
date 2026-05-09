@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "github.com/HackMateGolang/user-service/api/proto/v1;userpb";
+
+service UserService {
+    rpc GetUser (GetUserRequest) returns (GetUserResponse);
+    rpc PostUser (PostUserRequest) returns (PostUserResponse);
+    rpc PutUser (PutUserRequest) returns (PutUserResponse);
+    rpc PatchUser (PatchUserRequest) returns (PatchUserResponse);
+    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+}
+ 
+message GetUserRequest {
+    string login = 1;
+}
+
+message GetUserResponse {
+    string login = 1;
+    string username = 2;
+    string description  = 3;
+}
+
+message PostUserRequest {
+    string login = 1;
+    string username = 2;
+}
+
+message PostUserResponse {
+    string login = 1;
+}
+
+message Tech {
+    string name = 1;
+    string level = 2;
+}
+
+message Social {
+    string type = 1;
+    string url = 2;
+}
+
+message PutUserRequest {
+    string login = 1;
+    string username = 2;
+    string firstName = 3;
+    string secondName = 4;
+    string patronymic = 5;
+	repeated Tech stack = 6;
+	string description = 7;
+	repeated Social contacts = 8;
+	string shortDesc = 9;
+	string avatar = 10;
+}
+
+message PutUserResponse {
+    bool ok = 1;
+}
+
+message PatchUserRequest {
+    string login = 1;
+    optional string username = 2;
+    optional string firstName = 3;
+    optional string secondName = 4;
+    optional string patronymic = 5;
+	repeated Tech stack = 6;
+	optional string description = 7;
+	repeated Social contacts = 8;
+	optional string shortDesc = 9;
+	optional string avatar = 10;
+}
+
+message PatchUserResponse {
+    bool ok = 1;
+}
+
+message DeleteUserRequest {
+    string login = 1;
+}
+
+message DeleteUserResponse{
+    bool ok = 1;
+}
