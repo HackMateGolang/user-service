@@ -62,7 +62,7 @@ type Social struct {
 
 type Tech struct {
 	ID        uint   `gorm:"primaryKey"`
-	Userlogin string `gorm:"index"`
+	UserLogin string `gorm:"index"`
 	Name      string
 	Level     string
 }
