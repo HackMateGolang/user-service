@@ -6,9 +6,9 @@ type User struct {
 	FirstName   string
 	SecondName  string
 	Patronymic  string
-	Stack       map[string]struct{}
+	Stack       []Tech `gorm:"foreignKey:UserLogin;references:Login"`
 	Description string
-	Сontacts    map[string]string
+	Contacts    []Social `gorm:"foreignKey:UserLogin;references:Login"`
 	ShortDesc   string
 	Avatar      string
 }
@@ -29,9 +29,9 @@ type UpdateUserRequest struct {
 	FirstName   string
 	SecondName  string
 	Patronymic  string
-	Stack       map[string]struct{}
+	Stack       []Tech
 	Description string
-	Сontacts    map[string]string
+	Contacts    []Social
 	ShortDesc   string
 	Avatar      string
 }
@@ -42,13 +42,27 @@ type PatchUserRequest struct {
 	FirstName   *string
 	SecondName  *string
 	Patronymic  *string
-	Stack       *map[string]struct{}
+	Stack       []Tech
 	Description *string
-	Сontacts    *map[string]string
+	Contacts    []Social
 	ShortDesc   *string
 	Avatar      *string
 }
 
 type DeleteUserRequest struct {
 	Login string
+}
+
+type Social struct {
+	ID        uint   `gorm:"primaryKey"`
+	UserLogin string `gorm:"index"`
+	Type      string
+	Url       string
+}
+
+type Tech struct {
+	ID        uint   `gorm:"primaryKey"`
+	Userlogin string `gorm:"index"`
+	Name      string
+	Level     string
 }
