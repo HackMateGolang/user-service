@@ -43,7 +43,7 @@ func (r *UserRepository) ReadUser(ctx context.Context, req *models.ReadUserReque
 	}
 	
 
-	if err := r.db.Where("login = ?", req.Login).First(&user).Error; err != nil {
+	if err := r.db.Preload("Stack").Preload("Contacts").Where("login = ?", req.Login).First(&user).Error; err != nil {
 		return nil, fmt.Errorf("Repo: User not found: %w", err)
 	}
 
@@ -60,8 +60,18 @@ func (r *UserRepository) ReplaceUser(ctx context.Context, req *models.UpdateUser
 		return false, fmt.Errorf("Repo: user not found")
 	}
 
+	r.db.Where("UserLogin = ?", req.Login).Delete(&models.Tech{})
+	r.db.Where("UserLogin = ?", req.Login).Delete(&models.Social{})
+	
+	if len(req.Stack) > 0 {
+		r.db.Create(&req.Stack)
+	}
+	if len(req.Contacts) > 0 {
+		r.db.Create(&req.Contacts)
+	}
+
 	var updatedUser models.User
-	if err := r.db.Where("login = ?", req.Login).First(&updatedUser).Error; err != nil {
+	if err := r.db.Preload("Stack").Preload("Contacts").Where("login = ?", req.Login).First(&updatedUser).Error; err != nil {
 		return false, fmt.Errorf("Repo: updated user not found: %w", err)
 	}
 
@@ -78,8 +88,18 @@ func (r *UserRepository) PatchUser(ctx context.Context, req *models.PatchUserReq
 		return false, fmt.Errorf("Repo: user not found")
 	}
 
+	r.db.Where("UserLogin = ?", req.Login).Delete(&models.Tech{})
+	r.db.Where("UserLogin = ?", req.Login).Delete(&models.Social{})
+	
+	if len(req.Stack) > 0 {
+		r.db.Create(&req.Stack)
+	}
+	if len(req.Contacts) > 0 {
+		r.db.Create(&req.Contacts)
+	}
+
 	var patchedUser models.User
-	if err := r.db.Where("login = ?", req.Login).First(&patchedUser).Error; err != nil {
+	if err := r.db.Preload("Stack").Preload("Contacts").Where("login = ?", req.Login).First(&patchedUser).Error; err != nil {
 		return false, fmt.Errorf("Repo: patched user not found: %w", err)
 	}
 
