@@ -15,7 +15,6 @@ type User struct {
 
 type CreateUserRequest struct {
 	Login    string
-	Email    string
 	Username string
 }
 
