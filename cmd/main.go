@@ -41,7 +41,7 @@ func main() {
 
 	fmt.Println("gRPC server started on :50051 !!!")
 
-	if err != grpcServer.Serve(lis) {
+	if err := grpcServer.Serve(lis); err != nil {
 		fmt.Printf("gRPC serve error: %v", err)
 	}
 }
