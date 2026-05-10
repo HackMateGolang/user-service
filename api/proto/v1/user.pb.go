@@ -69,7 +69,14 @@ type GetUserResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Login         string                 `protobuf:"bytes,1,opt,name=login,proto3" json:"login,omitempty"`
 	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	FirstName     string                 `protobuf:"bytes,3,opt,name=firstName,proto3" json:"firstName,omitempty"`
+	SecondName    string                 `protobuf:"bytes,4,opt,name=secondName,proto3" json:"secondName,omitempty"`
+	Patronymic    string                 `protobuf:"bytes,5,opt,name=patronymic,proto3" json:"patronymic,omitempty"`
+	Stack         []*Tech                `protobuf:"bytes,6,rep,name=stack,proto3" json:"stack,omitempty"`
+	Description   string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
+	Contacts      []*Social              `protobuf:"bytes,8,rep,name=contacts,proto3" json:"contacts,omitempty"`
+	ShortDesc     string                 `protobuf:"bytes,9,opt,name=shortDesc,proto3" json:"shortDesc,omitempty"`
+	Avatar        string                 `protobuf:"bytes,10,opt,name=avatar,proto3" json:"avatar,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -118,9 +125,58 @@ func (x *GetUserResponse) GetUsername() string {
 	return ""
 }
 
+func (x *GetUserResponse) GetFirstName() string {
+	if x != nil {
+		return x.FirstName
+	}
+	return ""
+}
+
+func (x *GetUserResponse) GetSecondName() string {
+	if x != nil {
+		return x.SecondName
+	}
+	return ""
+}
+
+func (x *GetUserResponse) GetPatronymic() string {
+	if x != nil {
+		return x.Patronymic
+	}
+	return ""
+}
+
+func (x *GetUserResponse) GetStack() []*Tech {
+	if x != nil {
+		return x.Stack
+	}
+	return nil
+}
+
 func (x *GetUserResponse) GetDescription() string {
 	if x != nil {
 		return x.Description
+	}
+	return ""
+}
+
+func (x *GetUserResponse) GetContacts() []*Social {
+	if x != nil {
+		return x.Contacts
+	}
+	return nil
+}
+
+func (x *GetUserResponse) GetShortDesc() string {
+	if x != nil {
+		return x.ShortDesc
+	}
+	return ""
+}
+
+func (x *GetUserResponse) GetAvatar() string {
+	if x != nil {
+		return x.Avatar
 	}
 	return ""
 }
@@ -740,11 +796,24 @@ const file_user_proto_rawDesc = "" +
 	"\n" +
 	"user.proto\x12\x04user\"&\n" +
 	"\x0eGetUserRequest\x12\x14\n" +
-	"\x05login\x18\x01 \x01(\tR\x05login\"e\n" +
+	"\x05login\x18\x01 \x01(\tR\x05login\"\xc5\x02\n" +
 	"\x0fGetUserResponse\x12\x14\n" +
 	"\x05login\x18\x01 \x01(\tR\x05login\x12\x1a\n" +
-	"\busername\x18\x02 \x01(\tR\busername\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\"C\n" +
+	"\busername\x18\x02 \x01(\tR\busername\x12\x1c\n" +
+	"\tfirstName\x18\x03 \x01(\tR\tfirstName\x12\x1e\n" +
+	"\n" +
+	"secondName\x18\x04 \x01(\tR\n" +
+	"secondName\x12\x1e\n" +
+	"\n" +
+	"patronymic\x18\x05 \x01(\tR\n" +
+	"patronymic\x12 \n" +
+	"\x05stack\x18\x06 \x03(\v2\n" +
+	".user.TechR\x05stack\x12 \n" +
+	"\vdescription\x18\a \x01(\tR\vdescription\x12(\n" +
+	"\bcontacts\x18\b \x03(\v2\f.user.SocialR\bcontacts\x12\x1c\n" +
+	"\tshortDesc\x18\t \x01(\tR\tshortDesc\x12\x16\n" +
+	"\x06avatar\x18\n" +
+	" \x01(\tR\x06avatar\"C\n" +
 	"\x0fPostUserRequest\x12\x14\n" +
 	"\x05login\x18\x01 \x01(\tR\x05login\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\"(\n" +
@@ -843,25 +912,27 @@ var file_user_proto_goTypes = []any{
 	(*DeleteUserResponse)(nil), // 11: user.DeleteUserResponse
 }
 var file_user_proto_depIdxs = []int32{
-	4,  // 0: user.PutUserRequest.stack:type_name -> user.Tech
-	5,  // 1: user.PutUserRequest.contacts:type_name -> user.Social
-	4,  // 2: user.PatchUserRequest.stack:type_name -> user.Tech
-	5,  // 3: user.PatchUserRequest.contacts:type_name -> user.Social
-	0,  // 4: user.UserService.GetUser:input_type -> user.GetUserRequest
-	2,  // 5: user.UserService.PostUser:input_type -> user.PostUserRequest
-	6,  // 6: user.UserService.PutUser:input_type -> user.PutUserRequest
-	8,  // 7: user.UserService.PatchUser:input_type -> user.PatchUserRequest
-	10, // 8: user.UserService.DeleteUser:input_type -> user.DeleteUserRequest
-	1,  // 9: user.UserService.GetUser:output_type -> user.GetUserResponse
-	3,  // 10: user.UserService.PostUser:output_type -> user.PostUserResponse
-	7,  // 11: user.UserService.PutUser:output_type -> user.PutUserResponse
-	9,  // 12: user.UserService.PatchUser:output_type -> user.PatchUserResponse
-	11, // 13: user.UserService.DeleteUser:output_type -> user.DeleteUserResponse
-	9,  // [9:14] is the sub-list for method output_type
-	4,  // [4:9] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	4,  // 0: user.GetUserResponse.stack:type_name -> user.Tech
+	5,  // 1: user.GetUserResponse.contacts:type_name -> user.Social
+	4,  // 2: user.PutUserRequest.stack:type_name -> user.Tech
+	5,  // 3: user.PutUserRequest.contacts:type_name -> user.Social
+	4,  // 4: user.PatchUserRequest.stack:type_name -> user.Tech
+	5,  // 5: user.PatchUserRequest.contacts:type_name -> user.Social
+	0,  // 6: user.UserService.GetUser:input_type -> user.GetUserRequest
+	2,  // 7: user.UserService.PostUser:input_type -> user.PostUserRequest
+	6,  // 8: user.UserService.PutUser:input_type -> user.PutUserRequest
+	8,  // 9: user.UserService.PatchUser:input_type -> user.PatchUserRequest
+	10, // 10: user.UserService.DeleteUser:input_type -> user.DeleteUserRequest
+	1,  // 11: user.UserService.GetUser:output_type -> user.GetUserResponse
+	3,  // 12: user.UserService.PostUser:output_type -> user.PostUserResponse
+	7,  // 13: user.UserService.PutUser:output_type -> user.PutUserResponse
+	9,  // 14: user.UserService.PatchUser:output_type -> user.PatchUserResponse
+	11, // 15: user.UserService.DeleteUser:output_type -> user.DeleteUserResponse
+	11, // [11:16] is the sub-list for method output_type
+	6,  // [6:11] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }

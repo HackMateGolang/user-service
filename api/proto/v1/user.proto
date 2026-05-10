@@ -19,7 +19,14 @@ message GetUserRequest {
 message GetUserResponse {
     string login = 1;
     string username = 2;
-    string description  = 3;
+    string firstName = 3;
+    string secondName = 4;
+    string patronymic = 5;
+    repeated Tech stack = 6;
+    string description = 7;
+    repeated Social contacts = 8;
+    string shortDesc = 9;
+    string avatar = 10;
 }
 
 message PostUserRequest {

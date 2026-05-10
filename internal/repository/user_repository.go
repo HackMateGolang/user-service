@@ -60,8 +60,8 @@ func (r *UserRepository) ReplaceUser(ctx context.Context, req *models.UpdateUser
 		return false, fmt.Errorf("Repo: user not found")
 	}
 
-	r.db.Where("UserLogin = ?", req.Login).Delete(&models.Tech{})
-	r.db.Where("UserLogin = ?", req.Login).Delete(&models.Social{})
+	r.db.Where("user_login = ?", req.Login).Delete(&models.Tech{})
+	r.db.Where("user_login = ?", req.Login).Delete(&models.Social{})
 	
 	if len(req.Stack) > 0 {
 		r.db.Create(&req.Stack)
@@ -88,8 +88,8 @@ func (r *UserRepository) PatchUser(ctx context.Context, req *models.PatchUserReq
 		return false, fmt.Errorf("Repo: user not found")
 	}
 
-	r.db.Where("UserLogin = ?", req.Login).Delete(&models.Tech{})
-	r.db.Where("UserLogin = ?", req.Login).Delete(&models.Social{})
+	r.db.Where("user_login = ?", req.Login).Delete(&models.Tech{})
+	r.db.Where("user_login = ?", req.Login).Delete(&models.Social{})
 	
 	if len(req.Stack) > 0 {
 		r.db.Create(&req.Stack)

@@ -23,7 +23,18 @@ func (h *UserHandler) GetUser(ctx context.Context, req *userpb.GetUserRequest) (
 		return nil, err
 	}
 
-	return &userpb.GetUserResponse{Login: user.Login, Username: user.Username, Description: user.Description}, nil
+	return &userpb.GetUserResponse{
+		Login:       user.Login,
+		Username:    user.Username,
+		FirstName:   user.FirstName,
+		SecondName:  user.SecondName,
+		Patronymic:  user.Patronymic,
+		Stack:       mapTechsToProto(user.Stack),
+		Description: user.Description,
+		Contacts:    mapSocialsToProto(user.Contacts),
+		ShortDesc:   user.ShortDesc,
+		Avatar:      user.Avatar,
+	}, nil
 }
 
 func (h *UserHandler) PostUser(ctx context.Context, req *userpb.PostUserRequest) (*userpb.PostUserResponse, error) {
@@ -84,8 +95,8 @@ func mapTechs(login string, techs []*userpb.Tech) []models.Tech {
 		}
 		out = append(out, models.Tech{
 			UserLogin: login,
-			Name:  t.Name,
-			Level: t.Level,
+			Name:      t.Name,
+			Level:     t.Level,
 		})
 	}
 
@@ -100,8 +111,33 @@ func mapSocials(login string, socials []*userpb.Social) []models.Social {
 		}
 		out = append(out, models.Social{
 			UserLogin: login,
-			Type:  s.Type,
-			Url: s.Url,
+			Type:      s.Type,
+			Url:       s.Url,
+		})
+	}
+
+	return out
+}
+
+func mapSocialsToProto(socials []models.Social) []*userpb.Social {
+	out := make([]*userpb.Social, 0, len(socials))
+	for _, s := range socials {
+
+		out = append(out, &userpb.Social{
+			Type: s.Type,
+			Url:  s.Url,
+		})
+	}
+
+	return out
+}
+
+func mapTechsToProto(techs []models.Tech) []*userpb.Tech {
+	out := make([]*userpb.Tech, 0, len(techs))
+	for _, t := range techs {
+		out = append(out, &userpb.Tech{
+			Name:  t.Name,
+			Level: t.Level,
 		})
 	}
 
