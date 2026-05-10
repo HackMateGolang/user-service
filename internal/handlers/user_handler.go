@@ -41,9 +41,9 @@ func (h *UserHandler) PutUser(ctx context.Context, req *userpb.PutUserRequest) (
 		FirstName:   req.FirstName,
 		SecondName:  req.SecondName,
 		Patronymic:  req.Patronymic,
-		Stack:       mapTechs(req.Stack),
+		Stack:       mapTechs(req.Login, req.Stack),
 		Description: req.Description,
-		Contacts:    mapSocials(req.Contacts),
+		Contacts:    mapSocials(req.Login, req.Contacts),
 		ShortDesc:   req.ShortDesc,
 		Avatar:      req.Avatar,
 	})
@@ -62,9 +62,9 @@ func (h *UserHandler) PatchUser(ctx context.Context, req *userpb.PatchUserReques
 		FirstName:   req.FirstName,
 		SecondName:  req.SecondName,
 		Patronymic:  req.Patronymic,
-		Stack:       mapTechs(req.Stack),
+		Stack:       mapTechs(req.Login, req.Stack),
 		Description: req.Description,
-		Contacts:    mapSocials(req.Contacts),
+		Contacts:    mapSocials(req.Login, req.Contacts),
 		ShortDesc:   req.ShortDesc,
 		Avatar:      req.Avatar,
 	})
@@ -76,13 +76,14 @@ func (h *UserHandler) PatchUser(ctx context.Context, req *userpb.PatchUserReques
 	return &userpb.PatchUserResponse{Ok: ok}, nil
 }
 
-func mapTechs(techs []*userpb.Tech) []models.Tech {
+func mapTechs(login string, techs []*userpb.Tech) []models.Tech {
 	out := make([]models.Tech, 0, len(techs))
 	for _, t := range techs {
 		if t == nil {
 			continue
 		}
 		out = append(out, models.Tech{
+			UserLogin: login,
 			Name:  t.Name,
 			Level: t.Level,
 		})
@@ -91,13 +92,14 @@ func mapTechs(techs []*userpb.Tech) []models.Tech {
 	return out
 }
 
-func mapSocials(socials []*userpb.Social) []models.Social {
+func mapSocials(login string, socials []*userpb.Social) []models.Social {
 	out := make([]models.Social, 0, len(socials))
 	for _, s := range socials {
 		if s == nil {
 			continue
 		}
 		out = append(out, models.Social{
+			UserLogin: login,
 			Type:  s.Type,
 			Url: s.Url,
 		})
