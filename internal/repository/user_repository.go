@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/HackMateGolang/user-service/internal/models"
 	"github.com/redis/go-redis/v9"
@@ -32,10 +34,14 @@ func (r *UserRepository) ReadUser(ctx context.Context, req *models.ReadUserReque
 	}
 	key := userCacheKey(req.Login)
 	var user models.User
-	err := r.redisClient.HGetAll(ctx, key).Scan(&user)
-	if err == nil && user.Login != "" {
+	data, err := r.redisClient.Get(ctx, key).Result()
+	if err == nil && data != "" {
+		if err := r.userUnmarshal(data, &user); err != nil {
+			return nil, err
+		}
 		return &user, nil
 	}
+	
 
 	if err := r.db.Where("login = ?", req.Login).First(&user).Error; err != nil {
 		return nil, fmt.Errorf("Repo: User not found: %w", err)
@@ -92,7 +98,13 @@ func (r *UserRepository) DeleteUser(ctx context.Context, req *models.DeleteUserR
 
 func (r *UserRepository) userCaching(ctx context.Context, user *models.User) error {
 	key := userCacheKey(user.Login)
-	if err := r.redisClient.HSet(ctx, key, user).Err(); err != nil {
+	
+	jsonUser, err := json.Marshal(user)
+	if err != nil {
+		return fmt.Errorf("Repo: JSON marshall failed: %w", err)
+	}
+
+	if err := r.redisClient.Set(ctx, key, string(jsonUser), 1*time.Hour).Err(); err != nil {
 		return fmt.Errorf("Repo: user caching failed: %w", err)
 	}
 	return nil
@@ -100,4 +112,12 @@ func (r *UserRepository) userCaching(ctx context.Context, user *models.User) err
 
 func userCacheKey(login string) string {
 	return fmt.Sprintf("user:%v", login)
+}
+
+func (r *UserRepository) userUnmarshal(jsonUser string, usModel *models.User) error{
+	if err := json.Unmarshal([]byte(jsonUser), usModel); err != nil {
+		return fmt.Errorf("Repo: JSON unmarshal failed: %w", err)
+	}
+
+	return nil
 }
