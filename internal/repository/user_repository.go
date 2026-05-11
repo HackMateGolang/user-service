@@ -107,7 +107,7 @@ func (r *UserRepository) PatchUser(ctx context.Context, req *models.PatchUserReq
 }
 
 func (r *UserRepository) DeleteUser(ctx context.Context, req *models.DeleteUserRequest) (bool, error) {
-	if err := r.db.Delete(&models.User{}, req.Login).Error; err != nil {
+	if err := r.db.Where("login = ?", req.Login).Delete(&models.User{}).Error; err != nil {
 		return false, fmt.Errorf("Repo: user not found: %w", err)
 	}
 
