@@ -87,6 +87,16 @@ func (h *UserHandler) PatchUser(ctx context.Context, req *userpb.PatchUserReques
 	return &userpb.PatchUserResponse{Ok: ok}, nil
 }
 
+func (h *UserHandler) DeleteUser(ctx context.Context, req *userpb.DeleteUserRequest) (*userpb.DeleteUserResponse, error) {
+	ok, err := h.service.DeleteUser(ctx, &models.DeleteUserRequest{
+		Login: req.Login,
+	})
+	if err != nil {
+		return &userpb.DeleteUserResponse{Ok: ok}, err
+	}
+	return &userpb.DeleteUserResponse{Ok: ok}, nil
+}
+
 func mapTechs(login string, techs []*userpb.Tech) []models.Tech {
 	out := make([]models.Tech, 0, len(techs))
 	for _, t := range techs {
