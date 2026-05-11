@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 
 	userpb "github.com/HackMateGolang/user-service/api/proto/v1"
@@ -18,7 +19,7 @@ import (
 func main() {
 	db, err := initDB()
 	if err != nil {
-		fmt.Printf("failed to init db: %v", err)
+		log.Fatalf("failed to init db: %v", err)
 	}
 
 	cache := initCache()
