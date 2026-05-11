@@ -3,9 +3,9 @@ package models
 type User struct {
 	Login       string   `json:"login" gorm:"primaryKey"`
 	Username    string   `json:"username"`
-	FirstName   string   `json:"fistName"`
+	FirstName   string   `json:"firstName"`
 	SecondName  string   `json:"secondName"`
-	Patronymic  string   `json:"Patronimyc"`
+	Patronymic  string   `json:"Patronymic"`
 	Stack       []Tech   `json:"stack" gorm:"foreignKey:UserLogin;references:Login"`
 	Description string   `json:"description"`
 	Contacts    []Social `json:"contacts" gorm:"foreignKey:UserLogin;references:Login"`
