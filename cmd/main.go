@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 
-	userpb "github.com/HackMateGolang/user-service/api/proto/v1"
+	userpb "github.com/HackMateGolang/proto-contracts/gen/go/user/v1"
 	"github.com/HackMateGolang/user-service/internal/handlers"
 	"github.com/HackMateGolang/user-service/internal/models"
 	"github.com/HackMateGolang/user-service/internal/repository"

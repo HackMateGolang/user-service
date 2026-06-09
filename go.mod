@@ -3,8 +3,9 @@ module github.com/HackMateGolang/user-service
 go 1.25.5
 
 require (
+	github.com/HackMateGolang/proto-contracts v0.0.0-20260609115845-b64194195244
 	github.com/redis/go-redis/v9 v9.19.0
-	google.golang.org/grpc v1.81.0
+	google.golang.org/grpc v1.81.1
 	google.golang.org/protobuf v1.36.11
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
