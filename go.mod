@@ -4,6 +4,7 @@ go 1.25.5
 
 require (
 	github.com/HackMateGolang/proto-contracts v0.0.0-20260609115845-b64194195244
+	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.19.0
 	google.golang.org/grpc v1.81.1
 	google.golang.org/protobuf v1.36.11
