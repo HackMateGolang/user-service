@@ -66,7 +66,7 @@ func initDB(conf *config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("Init db failed: %w", err)
 	}
 
-	if err := db.AutoMigrate(&models.Social{}, &models.Tech{} ,&models.User{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.Social{}, &models.Tech{}); err != nil {
 		return nil, fmt.Errorf("failed to migrate: %w", err)
 	}
 
