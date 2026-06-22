@@ -4,25 +4,37 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strconv"
 
-	userpb "github.com/HackMateGolang/user-service/api/proto/v1"
+	userpb "github.com/HackMateGolang/proto-contracts/gen/go/user/v1"
+	"github.com/HackMateGolang/user-service/config"
 	"github.com/HackMateGolang/user-service/internal/handlers"
 	"github.com/HackMateGolang/user-service/internal/models"
 	"github.com/HackMateGolang/user-service/internal/repository"
 	"github.com/HackMateGolang/user-service/internal/service"
+
+	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+}
+
 func main() {
-	db, err := initDB()
+	conf := config.New()
+
+	db, err := initDB(conf)
 	if err != nil {
 		log.Fatalf("failed to init db: %v", err)
 	}
 
-	cache := initCache()
+	cache := initCache(conf)
 	defer cache.Close()
 
 	userRepo := repository.NewUserRepository(db, cache)
@@ -47,14 +59,14 @@ func main() {
 	}
 }
 //docker run -d --name userService -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=userService -p 5432:5432 postgres:16-alpine
-func initDB() (*gorm.DB, error) {
-	dsn := "host=localhost port=5432 user=postgres password=postgres dbname=userService sslmode=disable"
+func initDB(conf *config.Config) (*gorm.DB, error) {
+	dsn := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v sslmode=disable", conf.DB.Host, conf.DB.Port, conf.DB.User, conf.DB.Password, conf.DB.DBName)
 	db, err := gorm.Open(postgres.Open(dsn))
 	if err != nil {
 		return nil, fmt.Errorf("Init db failed: %w", err)
 	}
 
-	if err := db.AutoMigrate(&models.Social{}, &models.Tech{} ,&models.User{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.Social{}, &models.Tech{}); err != nil {
 		return nil, fmt.Errorf("failed to migrate: %w", err)
 	}
 
@@ -62,11 +74,13 @@ func initDB() (*gorm.DB, error) {
 }
 
 //docker run -d --name redis -p 6379:6379 redis:8.6.2
-func initCache() *redis.Client {
+func initCache(conf *config.Config) *redis.Client {
+	addr := fmt.Sprintf("%v:%v", conf.Cache.Host, conf.Cache.Port)
+	db, _ := strconv.Atoi(conf.Cache.DB)
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
+		Addr:     addr,
+		Password: conf.Cache.Password,
+		DB:       db,
 		Protocol: 2,
 	})
 
