@@ -18,12 +18,14 @@ type RedisConfig struct {
 }
 
 type Config struct {
+	Port string
 	DB DBConfig
 	Cache RedisConfig
 }
 
 func New() *Config {
 	return &Config{
+		Port: getEnv("SERVICE_PORT", ""),
 		DB: DBConfig{
 			Host: getEnv("POSTGRES_HOST", ""),
 			Port: getEnv("POSTGRES_PORT", ""),
