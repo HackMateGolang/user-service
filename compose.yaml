@@ -4,6 +4,8 @@ services:
     ports: 
       - "${SERVICE_PORT}:50051"
     environment: 
+      - SERVICE_PORT=${SERVICE_PORT}
+
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_USER=${POSTGRES_USER}
