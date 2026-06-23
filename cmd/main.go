@@ -52,7 +52,7 @@ func main() {
 
 	userpb.RegisterUserServiceServer(grpcServer, userHandler)
 
-	fmt.Println("gRPC server started on :50051 !!!")
+	log.Printf("gRPC server started on :%v !!!\n", conf.Port)
 
 	if err := grpcServer.Serve(lis); err != nil {
 		fmt.Printf("gRPC serve error: %v", err)
