@@ -10,7 +10,7 @@ import (
 	"github.com/HackMateGolang/user-service/config"
 	"github.com/HackMateGolang/user-service/internal/handlers"
 	"github.com/HackMateGolang/user-service/internal/models"
-	"github.com/HackMateGolang/user-service/internal/repository"
+	"github.com/HackMateGolang/user-service/internal/repository/gormpg"
 	"github.com/HackMateGolang/user-service/internal/service"
 
 	"github.com/joho/godotenv"
@@ -37,7 +37,7 @@ func main() {
 	cache := initCache(conf)
 	defer cache.Close()
 
-	userRepo := repository.NewUserRepository(db, cache)
+	userRepo := gormpg.NewUserRepository(db, cache)
 
 	userService := service.NewUserService(userRepo)
 
@@ -58,7 +58,7 @@ func main() {
 		fmt.Printf("gRPC serve error: %v", err)
 	}
 }
-//docker run -d --name userService -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=userService -p 5432:5432 postgres:16-alpine
+
 func initDB(conf *config.Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v sslmode=disable", conf.DB.Host, conf.DB.Port, conf.DB.User, conf.DB.Password, conf.DB.DBName)
 	db, err := gorm.Open(postgres.Open(dsn))
@@ -73,7 +73,6 @@ func initDB(conf *config.Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-//docker run -d --name redis -p 6379:6379 redis:8.6.2
 func initCache(conf *config.Config) *redis.Client {
 	addr := fmt.Sprintf("%v:%v", conf.Cache.Host, conf.Cache.Port)
 	db, _ := strconv.Atoi(conf.Cache.DB)
