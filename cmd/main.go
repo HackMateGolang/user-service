@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -10,8 +11,9 @@ import (
 	"github.com/HackMateGolang/user-service/config"
 	"github.com/HackMateGolang/user-service/internal/handlers"
 	"github.com/HackMateGolang/user-service/internal/models"
-	"github.com/HackMateGolang/user-service/internal/repository"
+	pgpgx "github.com/HackMateGolang/user-service/internal/repository/postgres"
 	"github.com/HackMateGolang/user-service/internal/service"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
@@ -29,7 +31,7 @@ func init() {
 func main() {
 	conf := config.New()
 
-	db, err := initDB(conf)
+	db, err := initPgxPool(context.Background(), conf)
 	if err != nil {
 		log.Fatalf("failed to init db: %v", err)
 	}
@@ -37,7 +39,7 @@ func main() {
 	cache := initCache(conf)
 	defer cache.Close()
 
-	userRepo := repository.NewUserRepository(db, cache)
+	userRepo := pgpgx.NewUserRepository(db)
 
 	userService := service.NewUserService(userRepo)
 
@@ -58,7 +60,7 @@ func main() {
 		fmt.Printf("gRPC serve error: %v", err)
 	}
 }
-//docker run -d --name userService -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=userService -p 5432:5432 postgres:16-alpine
+
 func initDB(conf *config.Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v sslmode=disable", conf.DB.Host, conf.DB.Port, conf.DB.User, conf.DB.Password, conf.DB.DBName)
 	db, err := gorm.Open(postgres.Open(dsn))
@@ -73,7 +75,6 @@ func initDB(conf *config.Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-//docker run -d --name redis -p 6379:6379 redis:8.6.2
 func initCache(conf *config.Config) *redis.Client {
 	addr := fmt.Sprintf("%v:%v", conf.Cache.Host, conf.Cache.Port)
 	db, _ := strconv.Atoi(conf.Cache.DB)
@@ -85,4 +86,14 @@ func initCache(conf *config.Config) *redis.Client {
 	})
 
 	return rdb
+}
+func initPgxPool(ctx context.Context, conf *config.Config) (*pgxpool.Pool, error) {
+	pool, err := pgxpool.New(ctx, fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v sslmode=disable", conf.DB.Host, conf.DB.Port, conf.DB.User, conf.DB.Password, conf.DB.DBName))
+	if err != nil {
+		return nil, fmt.Errorf("Connpool creating error: %w", err)
+	}
+	if err := pool.Ping(ctx); err != nil {
+		return nil, fmt.Errorf("DB connection error: %w", err)
+	}
+	return pool, nil
 }
