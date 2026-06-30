@@ -2,55 +2,44 @@ package gormpg
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/HackMateGolang/user-service/internal/models"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type UserRepository struct {
-	db          *gorm.DB
-	redisClient *redis.Client
+	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB, redisClient *redis.Client) *UserRepository {
-	return &UserRepository{db: db, redisClient: redisClient}
+func NewUserRepository(db *gorm.DB) *UserRepository {
+	return &UserRepository{db: db}
 }
 
 func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) (string, error) {
-	if err := r.db.Model(&models.User{}).Create(user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&models.User{}).Create(user).Error; err != nil {
 		return "", fmt.Errorf("Repo: Create user failed: %w", err)
 	}
 
-	return user.Login, r.userCaching(ctx, user)
+	return user.Login, nil
 }
 
 func (r *UserRepository) ReadUser(ctx context.Context, req *models.ReadUserRequest) (*models.User, error) {
 	if req.Login == "" {
 		return nil, fmt.Errorf("Repo: Login is empty")
 	}
-	key := userCacheKey(req.Login)
-	var user models.User
-	data, err := r.redisClient.Get(ctx, key).Result()
-	if err == nil && data != "" {
-		if err := r.userUnmarshal(data, &user); err != nil {
-			return nil, err
-		}
-		return &user, nil
-	}
 
-	if err := r.db.Preload("Stack").Preload("Contacts").Where("login = ?", req.Login).First(&user).Error; err != nil {
+	var user models.User
+
+	if err := r.db.WithContext(ctx).Preload("Stack").Preload("Contacts").Where("login = ?", req.Login).First(&user).Error; err != nil {
 		return nil, fmt.Errorf("Repo: User not found: %w", err)
 	}
 
-	return &user, r.userCaching(ctx, &user)
+	return &user, nil
 }
 
 func (r *UserRepository) ReplaceUser(ctx context.Context, req *models.UpdateUserRequest) (bool, error) {
-	if err := r.db.Transaction(func(tx *gorm.DB) error {
+	if err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&models.User{}).Where("login = ?", req.Login).Select("*").Updates(req)
 		if result.Error != nil {
 			return result.Error
@@ -84,16 +73,11 @@ func (r *UserRepository) ReplaceUser(ctx context.Context, req *models.UpdateUser
 		return false, fmt.Errorf("Repo: replace user failed %w", err)
 	}
 
-	var updatedUser models.User
-	if err := r.db.Preload("Stack").Preload("Contacts").Where("login = ?", req.Login).First(&updatedUser).Error; err != nil {
-		return false, fmt.Errorf("Repo: updated user not found: %w", err)
-	}
-
-	return true, r.userCaching(ctx, &updatedUser)
+	return true, nil
 }
 
 func (r *UserRepository) PatchUser(ctx context.Context, req *models.PatchUserRequest) (bool, error) {
-	if err := r.db.Transaction(func(tx *gorm.DB) error {
+	if err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&models.User{}).Where("login = ?", req.Login).Updates(req)
 		if result.Error != nil {
 			return result.Error
@@ -128,46 +112,18 @@ func (r *UserRepository) PatchUser(ctx context.Context, req *models.PatchUserReq
 		return false, fmt.Errorf("Repo: Patch user failed %w", err)
 	}
 
-	var patchedUser models.User
-	if err := r.db.Preload("Stack").Preload("Contacts").Where("login = ?", req.Login).First(&patchedUser).Error; err != nil {
-		return false, fmt.Errorf("Repo: patched user not found: %w", err)
-	}
-
-	return true, r.userCaching(ctx, &patchedUser)
-}
-
-func (r *UserRepository) DeleteUser(ctx context.Context, req *models.DeleteUserRequest) (bool, error) {
-	if err := r.db.Where("login = ?", req.Login).Delete(&models.User{}).Error; err != nil {
-		return false, fmt.Errorf("Repo: user not found: %w", err)
-	}
-
-	r.redisClient.Del(ctx, userCacheKey(req.Login))
-
 	return true, nil
 }
 
-func (r *UserRepository) userCaching(ctx context.Context, user *models.User) error {
-	key := userCacheKey(user.Login)
-
-	jsonUser, err := json.Marshal(user)
-	if err != nil {
-		return fmt.Errorf("Repo: JSON marshall failed: %w", err)
+func (r *UserRepository) DeleteUser(ctx context.Context, req *models.DeleteUserRequest) (bool, error) {
+	tx := r.db.WithContext(ctx).Where("login = ?", req.Login).Delete(&models.User{})
+	if tx.Error != nil {
+		return false, fmt.Errorf("Repo: delete user failed %w", tx.Error)
 	}
 
-	if err := r.redisClient.Set(ctx, key, string(jsonUser), 1*time.Hour).Err(); err != nil {
-		return fmt.Errorf("Repo: user caching failed: %w", err)
-	}
-	return nil
-}
-
-func userCacheKey(login string) string {
-	return fmt.Sprintf("user:%v", login)
-}
-
-func (r *UserRepository) userUnmarshal(jsonUser string, usModel *models.User) error {
-	if err := json.Unmarshal([]byte(jsonUser), usModel); err != nil {
-		return fmt.Errorf("Repo: JSON unmarshal failed: %w", err)
+	if tx.RowsAffected == 0 {
+		return false, fmt.Errorf("User doesnt exists")
 	}
 
-	return nil
+	return true, nil
 }
