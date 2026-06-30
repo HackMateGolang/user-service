@@ -87,6 +87,7 @@ func initCache(conf *config.Config) *redis.Client {
 
 	return rdb
 }
+
 func initPgxPool(ctx context.Context, conf *config.Config) (*pgxpool.Pool, error) {
 	pool, err := pgxpool.New(ctx, fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v sslmode=disable", conf.DB.Host, conf.DB.Port, conf.DB.User, conf.DB.Password, conf.DB.DBName))
 	if err != nil {
